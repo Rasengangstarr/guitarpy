@@ -3,6 +3,47 @@ import os
 import time
 import keyboard
 
+def recordMode():
+    lines = []
+    while True:
+        print("x")
+        time.sleep(0.05)
+        line = ""
+        try:
+            if keyboard.is_pressed("1"):
+                line += "| X "
+            else:
+                line += "|   "
+
+                
+            if keyboard.is_pressed('2'):
+                line += "| X "
+            else:
+                line += "|   "
+
+            if keyboard.is_pressed('3'):
+                line += "| X "
+            else:
+                line += "|   "
+
+            if keyboard.is_pressed('4'):
+                line += "| X "
+            else:
+                line += "|   "
+                
+            if keyboard.is_pressed('5'):
+                line += "| X |"
+            else:
+                line += "|   |"
+
+            if keyboard.is_pressed('0'):
+                return lines
+
+        except:
+            pass
+        time.sleep(0.05)
+        lines.append(line)
+
 def gameLoop(song):
     #for each line in the song
     notesHit = 0
@@ -44,7 +85,7 @@ def gameLoop(song):
         
         line = list(song[i-8])
         print(line)
-        time.sleep(0.2)
+        time.sleep(0.05)
         try:
             if keyboard.is_pressed("1"):
                 pressedKeys[0] = 1
@@ -83,7 +124,7 @@ def gameLoop(song):
                 
         except:
             pass
-        time.sleep(0.2)
+        time.sleep(0.05)
         if pressedKeys[0] == 0 and line[2] == 'X':
             notesMissed += 1
         if pressedKeys[1] == 0 and line[6] == 'X':
@@ -117,8 +158,19 @@ if __name__ == '__main__':
     print("WHICH ROCKIN' SONG DO YOU WANNA PLAY?")
     for i in range(0,len(songs)):
         print (str(i) + " - " + songs[i])
+    
+    songInput = raw_input(" ")
+    
+    if songInput == "r":
+        lines = recordMode()
+        with open('your_file.txt', 'w') as f:
+            for item in lines:
+                f.write("%s\n" % item)
 
-    songChoice = int(input(">"))
+    else:
+        songChoice = int(songInput)
+
+    
 
     songFile = "songs/"+songs[songChoice]
 
@@ -127,7 +179,7 @@ if __name__ == '__main__':
     with open(songFile) as f:
         content = f.readlines()
         content = [x.strip() for x in content] 
-
+    raw_input("ready???")
     gameLoop(content)
 
         
