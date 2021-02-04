@@ -1,188 +1,58 @@
-import pyfiglet
-import os
+import curses
+import datetime
+import vlc
 import time
-import keyboard
+import functools
+import math
 
-def recordMode():
-    lines = []
-    while True:
-        print("x")
-        time.sleep(0.05)
-        line = ""
-        try:
-            if keyboard.is_pressed("1"):
-                line += "| X "
-            else:
-                line += "|   "
 
-                
-            if keyboard.is_pressed('2'):
-                line += "| X "
-            else:
-                line += "|   "
+def redraw(stdscr, t, notes):
+    notesToDraw = [n for n in notes if n[1]/1000 < t + 3 and n[1]/1000 > t]
+    notesOnAdjustedLines = [(n[0], math.ceil((n[1]-t*1000) / 30), n[2]) for n in notesToDraw]
+    stdscr.addstr(31,0,str(notesToDraw))
+    stdscr.addstr(32,0,str(t))
+    stdscr.addstr(33,0,str(notesOnAdjustedLines))
+    for i in range (0, 30):
+        noteToDraw = [n for n in notesOnAdjustedLines if n[1] == i]
+        if len(noteToDraw) > 0:
+            stdscr.addstr(i,0,str(noteToDraw[0][1] ))
+        else:
+            stdscr.addstr(i,0,"nout")
 
-            if keyboard.is_pressed('3'):
-                line += "| X "
-            else:
-                line += "|   "
 
-            if keyboard.is_pressed('4'):
-                line += "| X "
-            else:
-                line += "|   "
-                
-            if keyboard.is_pressed('5'):
-                line += "| X |"
-            else:
-                line += "|   |"
 
-            if keyboard.is_pressed('0'):
-                return lines
 
-        except:
-            pass
-        time.sleep(0.05)
-        lines.append(line)
+p = vlc.MediaPlayer("TEST_SONG.mp3")
+#p.play()
 
-def gameLoop(song):
-    #for each line in the song
-    notesHit = 0
-    notesMishit = 0
-    notesMissed = 0
-    for i in range (0, len(song)):
+stdscr = curses.initscr()
+curses.noecho()
+stdscr.nodelay(1) # set getch() non-blocking
 
-        for j in range(0, 9, 1):
-            if i - j > 0:
-                
-                if j == 8:
-                    s = list(song[i-j])
-                    s[1] = '['
-                    s[3] = ']'
-                    s[5] = '['
-                    s[7] = ']'
-                    s[9] = '['
-                    s[11] = ']'
-                    s[13] = '['
-                    s[15] = ']'
-                    s[17] = '['
-                    s[19] = ']'
-                    print("".join(s))
-                else:
-                    print(song[i-j])
-            else:
-                if j == 8:
-                    print("|[ ]|[ ]|[ ]|[ ]|[ ]|")
-                else:
-                    print("|   |   |   |   |   |")
-        pressedKeys = [0,0,0,0,0]
-        print(" ")
-        print(" ")
-        print(" ")
-        print(" ")
-        print("notesHit: " + str(notesHit))
-        print("notesMissed: " + str(notesMissed))
-        print("notesMishit: " + str(notesMishit))
-        
-        line = list(song[i-8])
-        print(line)
-        time.sleep(0.05)
-        try:
-            if keyboard.is_pressed("1"):
-                pressedKeys[0] = 1
-                if line[2] == 'X':
-                    notesHit += 1
-                else:
-                    notesMishit +=1
-                
-            if keyboard.is_pressed('2'):
-                pressedKeys[1] = 1
-                if line[6] == 'X':
-                    notesHit += 1
-                else:
-                    notesMishit +=1
-                
-            if keyboard.is_pressed('3'):
-                pressedKeys[2] = 1
-                if line[10] == 'X':
-                    notesHit += 1
-                else:
-                    notesMishit +=1
+# note, start, finish
+notes = [(1, 5000, 5000)]
+
+stdscr.addstr(0,0,"Press \"p\" to show count, \"q\" to exit...")
+line = 1
+try:
+    count = 1
+    startTime = time.time()
+    lastDraw = time.time()
+    while 1:
+        now = time.time()
+        c = stdscr.getch()
+        #if c == ord('1'):
+        #    stdscr.addstr(line,0,str(count))
+        #    line += 1
+        if c == ord('x'):
+            break
+        if now - lastDraw > 0.01:
+            stdscr.addstr(0,0,str(now - lastDraw))
             
-            if keyboard.is_pressed('4'):
-                pressedKeys[3] = 1
-                if line[14] == 'X':
-                    notesHit += 1
-                else:
-                    notesMishit +=1
+            lastDraw = now
+            redraw(stdscr, now-startTime, notes)
+            
 
-            if keyboard.is_pressed('5'):
-                pressedKeys[4] = 1
-                if line[18] == 'X':
-                    notesHit += 1
-                else:
-                    notesMishit +=1
-                
-        except:
-            pass
-        time.sleep(0.05)
-        if pressedKeys[0] == 0 and line[2] == 'X':
-            notesMissed += 1
-        if pressedKeys[1] == 0 and line[6] == 'X':
-            notesMissed += 1
-        if pressedKeys[2] == 0 and line[10] == 'X':
-            notesMissed += 1
-        if pressedKeys[3] == 0 and line[14] == 'X':
-            notesMissed += 1
-        if pressedKeys[4] == 0 and line[18] == 'X':
-            notesMissed += 1
+finally:
+    curses.endwin()
 
-        
-        os.system('cls' if os.name == 'nt' else 'clear')
-
-    print("FINAL SCORE")
-    print("notesHit: " + str(notesHit))
-    print("notesMissed: " + str(notesMissed))
-    print("notesMishit: " + str(notesMishit))
-
-
-if __name__ == '__main__':
-    os.system('cls' if os.name == 'nt' else 'clear')
-    ascii_banner = pyfiglet.figlet_format("GUITARPY")
-    print(ascii_banner)
-    songs = []
-    #get all songs available
-    for file in os.listdir("songs"):
-        if file.endswith(".txt"):
-            songs.append(file)
-    
-    print("WHICH ROCKIN' SONG DO YOU WANNA PLAY?")
-    for i in range(0,len(songs)):
-        print (str(i) + " - " + songs[i])
-    
-    songInput = raw_input(" ")
-    
-    if songInput == "r":
-        lines = recordMode()
-        with open('your_file.txt', 'w') as f:
-            for item in lines:
-                f.write("%s\n" % item)
-
-    else:
-        songChoice = int(songInput)
-
-    
-
-    songFile = "songs/"+songs[songChoice]
-
-    content = []
-
-    with open(songFile) as f:
-        content = f.readlines()
-        content = [x.strip() for x in content] 
-    raw_input("ready???")
-    gameLoop(content)
-
-        
-
-    
-    
