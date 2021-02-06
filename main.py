@@ -4,11 +4,11 @@ import vlc
 import time
 import functools
 import math
-
+import pickle
 import util
+import pyfiglet
 
-
-p = vlc.MediaPlayer("test.mp3")
+p = vlc.MediaPlayer("test2.mp3")
 p.play()
 
 stdscr = curses.initscr()
@@ -16,7 +16,7 @@ curses.noecho()
 stdscr.nodelay(1) # set getch() non-blocking
 
 # note, start, finish
-notes = [(1, 5000, 5000),(2,3000,3000), (3,4000,4000)]
+notes = pickle.load(open('test2', 'rb'))
 
 rrate = 0.1
 rprecision = 100
@@ -55,7 +55,7 @@ try:
             if 5 in currentNotes:
                 score += 1
             
-        stdscr.addstr(38, 0, "points: " + str(score)) 
+        stdscr.addstr(40, 0, pyfiglet.figlet_format("points: " + str(score))) 
         stdscr.addstr(39,0,str(notesPressed))
         if c == ord('x'):
             break
